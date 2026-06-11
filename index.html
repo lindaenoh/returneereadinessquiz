@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Returnee Readiness Assessment · The Returnee Project</title>
+<style>
+  /* ── Reset & Base ─────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --terra:   #C4622D;
+    --gold:    #D4A843;
+    --cream:   #FFF3E4;
+    --tan:     #FAE8D4;
+    --ebony:   #3D1C02;
+    --ebony2:  #5C3317;
+    --white:   #FFFFFF;
+    --radius:  12px;
+    --shadow:  0 4px 24px rgba(61,28,2,.12);
+  }
+
+  html, body {
+    min-height: 100%;
+    background: var(--cream);
+    font-family: 'Georgia', serif;
+    color: var(--ebony);
+  }
+
+  .quiz-shell {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 48px;
+  }
+
+  .quiz-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    width: 100%;
+    max-width: 640px;
+    overflow: hidden;
+  }
+
+  .top-bar {
+    background: var(--ebony);
+    padding: 18px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .brand-label {
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: 11px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 700;
+  }
+  .q-counter {
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: 12px;
+    color: rgba(255,255,255,.5);
+  }
+  .progress-track { background: var(--tan); height: 5px; }
+  .progress-fill { background: var(--terra); height: 5px; width: 0%; transition: width .4s ease; }
+  .screen { display: none; }
+  .screen.active { display: block; }
+  .intro-body { padding: 40px 36px 36px; }
+  .intro-body h1 { font-size: 26px; line-height: 1.3; color: var(--ebony); margin-bottom: 12px; }
+  .intro-body h1 span { color: var(--terra); }
+  .intro-body p { font-size: 15px; line-height: 1.7; color: var(--ebony2); margin-bottom: 14px; }
+  .intro-meta { display: flex; gap: 20px; margin: 20px 0 28px; flex-wrap: wrap; }
+  .intro-meta-item { display: flex; align-items: center; gap: 7px; font-family: 'Helvetica Neue', sans-serif; font-size: 13px; color: var(--ebony2); }
+  .intro-meta-item .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
+  .q-body { padding: 32px 36px 28px; }
+  .q-label { font-family: 'Helvetica Neue', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--terra); font-weight: 700; margin-bottom: 10px; }
+  .q-text { font-size: 20px; line-height: 1.4; color: var(--ebony); margin-bottom: 28px; font-weight: normal; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .option-btn { background: var(--cream); border: 2px solid transparent; border-radius: 8px; padding: 14px 18px; text-align: left; cursor: pointer; transition: all .2s ease; font-family: 'Georgia', serif; font-size: 14px; line-height: 1.5; color: var(--ebony); display: flex; align-items: flex-start; gap: 12px; }
+  .option-btn:hover { border-color: var(--gold); background: var(--tan); }
+  .option-btn.selected { border-color: var(--terra); background: #FDE8D8; }
+  .option-letter { font-family: 'Helvetica Neue', sans-serif; font-weight: 700; font-size: 13px; color: var(--terra); min-width: 18px; padding-top: 2px; }
+  .option-text { flex: 1; }
+  .q-nav { display: flex; justify-content: space-between; align-items: center; padding: 16px 36px 28px; gap: 12px; }
+  .btn-back { font-family: 'Helvetica Neue', sans-serif; font-size: 13px; color: var(--ebony2); background: none; border: none; cursor: pointer; padding: 8px 0; opacity: .7; transition: opacity .2s; }
+  .btn-back:hover { opacity: 1; }
+  .btn-back:disabled { opacity: .25; cursor: default; }
+  .btn-primary { background: var(--terra); color: var(--white); border: none; border-radius: 8px; padding: 14px 32px; font-family: 'Helvetica Neue', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer; transition: background .2s, transform .1s; letter-spacing: .3px; }
+  .btn-primary:hover { background: #a8521f; }
+  .btn-primary:active { transform: scale(.98); }
+  .btn-primary:disabled { background: #ccc; cursor: default; }
+  .gate-body { padding: 40px 36px 36px; text-align: center; }
+  .gate-body h2 { font-size: 22px; color: var(--ebony); margin-bottom: 10px; line-height: 1.3; }
+  .gate-body p { font-size: 14px; line-height: 1.7; color: var(--ebony2); margin-bottom: 24px; max-width: 420px; margin-left: auto; margin-right: auto; }
+  .gate-form { display: flex; flex-direction: column; gap: 12px; max-width: 360px; margin: 0 auto; }
+  .gate-form input { border: 2px solid var(--tan); border-radius: 8px; padding: 13px 16px; font-family: 'Helvetica Neue', sans-serif; font-size: 14px; color: var(--ebony); background: var(--cream); transition: border-color .2s; outline: none; }
+  .gate-form input:focus { border-color: var(--terra); }
+  .gate-form input::placeholder { color: #b89078; }
+  .gate-privacy { font-family: 'Helvetica Neue', sans-serif; font-size: 11px; color: var(--ebony2); opacity: .6; text-align: center; margin-top: 4px; }
+  .gate-error { color: #c0392b; font-family: 'Helvetica Neue', sans-serif; font-size: 13px; text-align: center; min-height: 18px; }
+  .result-header { background: var(--ebony); padding: 32px 36px 28px; text-align: center; }
+  .result-stage-label { font-family: 'Helvetica Neue', sans-serif; font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--gold); font-weight: 700; margin-bottom: 10px; }
+  .result-stage-name { font-size: 30px; color: var(--white); margin-bottom: 6px; }
+  .result-score-badge { display: inline-block; background: rgba(212,168,67,.18); border: 1px solid var(--gold); border-radius: 20px; padding: 5px 16px; font-family: 'Helvetica Neue', sans-serif; font-size: 12px; color: var(--gold); margin-top: 6px; }
+  .result-body { padding: 28px 36px; }
+  .result-tagline { font-size: 16px; color: var(--terra); font-style: italic; margin-bottom: 16px; line-height: 1.5; }
+  .result-description { font-size: 14px; line-height: 1.8; color: var(--ebony2); margin-bottom: 20px; }
+  .next-step-box { background: var(--tan); border-left: 4px solid var(--terra); border-radius: 0 8px 8px 0; padding: 16px 20px; margin-bottom: 28px; }
+  .next-step-label { font-family: 'Helvetica Neue', sans-serif; font-weight: 700; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--terra); margin-bottom: 8px; }
+  .next-step-text { font-size: 14px; line-height: 1.7; color: var(--ebony); }
+  .cta-block { background: var(--ebony); border-radius: 10px; padding: 28px 24px; text-align: center; margin-bottom: 24px; }
+  .cta-block h3 { color: var(--white); font-size: 18px; margin-bottom: 10px; line-height: 1.3; }
+  .cta-block p { color: rgba(255,255,255,.7); font-family: 'Helvetica Neue', sans-serif; font-size: 13px; line-height: 1.6; margin-bottom: 16px; }
+  .cta-price { font-family: 'Helvetica Neue', sans-serif; font-size: 22px; font-weight: 700; color: var(--gold); margin-bottom: 16px; }
+  .btn-cta { display: inline-block; background: var(--terra); color: var(--white); text-decoration: none; border-radius: 8px; padding: 14px 36px; font-family: 'Helvetica Neue', sans-serif; font-weight: 700; font-size: 15px; transition: background .2s; border: none; cursor: pointer; }
+  .btn-cta:hover { background: #a8521f; }
+  .share-row { text-align: center; font-family: 'Helvetica Neue', sans-serif; font-size: 12px; color: var(--ebony2); opacity: .7; }
+  .share-row a { color: var(--terra); text-decoration: none; font-weight: 700; }
+  .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.4); border-top-color: white; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; margin-right: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (max-width: 480px) {
+    .intro-body, .q-body, .gate-body, .result-body { padding-left: 22px; padding-right: 22px; }
+    .q-nav { padding-left: 22px; padding-right: 22px; }
+    .top-bar { padding: 14px 22px; }
+    .result-header { padding: 28px 22px 22px; }
+    .q-text { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+<div class="quiz-shell">
+  <div class="quiz-card">
+    <div class="top-bar">
+      <span class="brand-label">The Returnee Project</span>
+      <span class="q-counter" id="q-counter"></span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="screen active" id="screen-intro">
+      <div class="intro-body">
+        <h1>The Returnee<br/><span>Readiness Assessment</span></h1>
+        <p>You’ve been saying <em>“eventually”</em> for a while now. This quiz will tell you exactly which stage of the return journey you’re in — and what your next move should be.</p>
+        <div class="intro-meta">
+          <div class="intro-meta-item"><span class="dot"></span>10 questions</div>
+          <div class="intro-meta-item"><span class="dot"></span>About 3 minutes</div>
+          <div class="intro-meta-item"><span class="dot"></span>Instant result</div>
+        </div>
+        <p style="font-size:13px;font-family:'Helvetica Neue',sans-serif;color:var(--ebony2);opacity:.8;">Answer honestly based on where you <em>are</em> right now — not where you want to be.</p>
+        <br/>
+        <button class="btn-primary" onclick="startQuiz()">Take the Assessment →</button>
+      </div>
+    </div>
+    <div class="screen" id="screen-question">
+      <div class="q-body">
+        <div class="q-label" id="q-label">Question 1 of 10</div>
+        <div class="q-text" id="q-text"></div>
+        <div class="options" id="options-container"></div>
+      </div>
+      <div class="q-nav">
+        <button class="btn-back" id="btn-back" onclick="goBack()">← Back</button>
+        <button class="btn-primary" id="btn-next" onclick="goNext()" disabled>Next →</button>
+      </div>
+    </div>
+    <div class="screen" id="screen-gate">
+      <div class="gate-body">
+        <h2>Your result is ready 🌍</h2>
+        <p>Enter your name and email to see your Returnee Readiness stage and your personalized next step.</p>
+        <div class="gate-form">
+          <input type="text" id="gate-name" placeholder="First name" autocomplete="given-name" />
+          <input type="email" id="gate-email" placeholder="Email address" autocomplete="email" />
+          <div class="gate-error" id="gate-error"></div>
+          <button class="btn-primary" id="btn-reveal" onclick="submitGate()">Show My Result →</button>
+          <div class="gate-privacy">No spam. Unsubscribe anytime. Your result is delivered instantly.</div>
+        </div>
+      </div>
+    </div>
+    <div class="screen" id="screen-result">
+      <div class="result-header">
+        <div class="result-stage-label">Your Returnee Stage</div>
+        <div class="result-stage-name" id="result-name"></div>
+        <div class="result-score-badge" id="result-badge"></div>
+      </div>
+      <div class="result-body">
+        <div class="result-tagline" id="result-tagline"></div>
+        <div class="result-description" id="result-description"></div>
+        <div class="next-step-box">
+          <div class="next-step-label">Your Next Step</div>
+          <div class="next-step-text" id="result-next-step"></div>
+        </div>
+        <div class="cta-block">
+          <h3>Ready to stop saying “eventually”?</h3>
+          <p>The Returnee Roadmap is the complete self-guided plan for African professionals in America who are done waiting — and ready to build the actual path home.</p>
+          <div class="cta-price">$97 · Founding Member Price</div>
+          <a class="btn-cta" href="https://stan.store/LindaEnoh/LindaEnoh_store/page/5029018" target="_blank">Get The Returnee Roadmap →</a>
+        </div>
+        <div class="share-row">
+          <a href="https://www.youtube.com/@TheReturneeProject" target="_blank">@TheReturneeProject on YouTube</a>
+          &nbsp;·&nbsp; Questions? <a href="mailto:linda@fundyourmoveabroad.com">linda@fundyourmoveabroad.com</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const QUESTIONS = [
+  { text: "How long have you been thinking about returning to Africa?", options: [
+    { letter: "A", text: "I’ve always known I’d go back ‘someday’ — but it’s mostly a feeling, not a plan.", pts: 1 },
+    { letter: "B", text: "I’ve been seriously thinking about it for 1–3 years and have started researching.", pts: 2 },
+    { letter: "C", text: "I’ve been actively planning for more than 3 years and have visited potential destinations.", pts: 3 },
+    { letter: "D", text: "I have a target move date. The planning is underway.", pts: 4 },
+  ]},
+  { text: "When you think about your return timeline, which is closest to your reality?", options: [
+    { letter: "A", text: "‘Eventually’ — no specific timeframe.", pts: 1 },
+    { letter: "B", text: "‘Within the next 5–10 years’ — but I haven’t mapped the steps yet.", pts: 2 },
+    { letter: "C", text: "‘Within 2–5 years’ — I have a rough plan but significant gaps remain.", pts: 3 },
+    { letter: "D", text: "‘Within 2 years’ — I have a timeline and I’m working toward it.", pts: 4 },
+  ]},
+  { text: "How would you describe your financial readiness for the move?", options: [
+    { letter: "A", text: "I haven’t done the numbers yet — I don’t know what the move would actually cost.", pts: 1 },
+    { letter: "B", text: "I have a general sense but I haven’t built a real financial plan.", pts: 2 },
+    { letter: "C", text: "I’ve researched cost of living in my target destination and have a savings target in mind.", pts: 3 },
+    { letter: "D", text: "I know my financial runway number and I’m actively building toward it.", pts: 4 },
+  ]},
+  { text: "What is the status of your family alignment?", options: [
+    { letter: "A", text: "My family doesn’t know I’m seriously considering this.", pts: 1 },
+    { letter: "B", text: "We’ve talked about it but aren’t aligned — there is real resistance.", pts: 2 },
+    { letter: "C", text: "My immediate family is generally supportive but we haven’t made final decisions.", pts: 3 },
+    { letter: "D", text: "My family is aligned. We have made the decision together.", pts: 4 },
+  ]},
+  { text: "How clear are you on WHERE you’re returning to?", options: [
+    { letter: "A", text: "I assume it’s my home country, but I haven’t really thought it through.", pts: 1 },
+    { letter: "B", text: "I have 2–3 countries in mind but no clear front-runner yet.", pts: 2 },
+    { letter: "C", text: "I have a destination in mind and have done meaningful research on it.", pts: 3 },
+    { letter: "D", text: "I have chosen my destination. I’ve visited, researched, and committed.", pts: 4 },
+  ]},
+  { text: "What have you actually done to research your return?", options: [
+    { letter: "A", text: "I watch YouTube videos and follow returnee accounts — mostly passive consumption.", pts: 1 },
+    { letter: "B", text: "I’ve joined communities, attended events, and done some active research.", pts: 2 },
+    { letter: "C", text: "I’ve visited my target destination at least once specifically to evaluate it.", pts: 3 },
+    { letter: "D", text: "I’ve researched housing, schools, healthcare, and finances in detail — most decisions are made.", pts: 4 },
+  ]},
+  { text: "How are you thinking about income after the move?", options: [
+    { letter: "A", text: "I haven’t figured this out yet — it’s one of the big unknowns.", pts: 1 },
+    { letter: "B", text: "I’m hoping to find work there or keep my current job remotely.", pts: 2 },
+    { letter: "C", text: "I’m actively building location-independent income or have a concrete plan.", pts: 3 },
+    { letter: "D", text: "My income situation is sorted — I know how I’ll fund my life on the ground.", pts: 4 },
+  ]},
+  { text: "What does the fear or hesitation feel like right now?", options: [
+    { letter: "A", text: "The fear feels bigger than the dream — I’m not sure I can actually do this.", pts: 1 },
+    { letter: "B", text: "The fear is real but I’m working through it — it doesn’t stop me from planning.", pts: 2 },
+    { letter: "C", text: "I have specific fears (finances, kids, healthcare) that I’m actively addressing.", pts: 3 },
+    { letter: "D", text: "The decision is made. The fears are manageable. I’m focused on execution.", pts: 4 },
+  ]},
+  { text: "What is your relationship to your African identity in your daily life?", options: [
+    { letter: "A", text: "I’ve built an American life — the African part feels distant or complicated.", pts: 1 },
+    { letter: "B", text: "I live a dual life: American professionally, African at home — but the gap is widening.", pts: 2 },
+    { letter: "C", text: "I actively maintain my African identity and am preparing my children to know where they come from.", pts: 3 },
+    { letter: "D", text: "Returning to Africa is not an ‘if’ — it’s a ‘when’ that I’ve already answered.", pts: 4 },
+  ]},
+  { text: "Which statement best describes where you are right now?", options: [
+    { letter: "A", text: "‘I know I want to go back. I just don’t know how to start.’", pts: 1 },
+    { letter: "B", text: "‘I’ve started researching and thinking seriously. I have more questions than answers.’", pts: 2 },
+    { letter: "C", text: "‘I’m in active planning mode. I have a destination, a rough timeline, and real gaps to close.’", pts: 3 },
+    { letter: "D", text: "‘The decision is made. I’m executing the plan.’", pts: 4 },
+  ]},
+];
+const RESULTS = [
+  { min:10, max:19, name:"The Dreamer", tagline:"The desire is real. The plan is not yet.",
+    description:"You know Africa is calling you home — you’ve known for years. But ‘eventually’ has been your answer every time someone asks when you’re going, including when you ask yourself. The dream is intact. What’s missing is the decision that turns a dream into a direction.\n\nThis is not a criticism. Most returnees spend years in this stage — not because they lack commitment, but because no one has given them a clear roadmap for how to actually begin. The fear of getting it wrong, of disrupting what you’ve built, of not knowing where to start — these are real. And they are solvable.",
+    nextStep:"Don’t start with logistics. Start with clarity. The most important question isn’t ‘how do I move?’ — it’s ‘why now, and what is actually stopping me?’ The Returnee Roadmap opens with exactly this work. It won’t push you before you’re ready. But it will show you the path from where you are."},
+  { min:20, max:27, name:"The Planner", tagline:"You’ve moved past dreaming. Now you need a system.",
+    description:"You are doing the work — researching, watching, reading, asking questions in the right communities. You have a sense of where you want to go and a rough timeline in your head. But the plan is scattered across browser tabs, YouTube watch histories, and WhatsApp voice notes. You haven’t brought it all together yet.\n\nThe risk for Planners is analysis paralysis. You could research for another five years and still feel unready. At some point, the research has to become a plan — with decisions made, financial targets set, and a real timeline.",
+    nextStep:"You need a framework to organize what you already know — and to identify the specific gaps that need closing before you can move. The Returnee Roadmap gives you that structure: decision framework, destination criteria, financial calculator, family alignment guide, and a 90-day departure plan."},
+  { min:28, max:34, name:"The Dual-Lifer", tagline:"You’ve done the work. Now close the gaps.",
+    description:"You are living between two worlds — and the gap is starting to cost you. You’ve visited your destination. You’ve had the hard conversations with your partner. You’ve done the financial math, at least roughly. But something is still keeping you from committing fully: a financial gap, a family holdout, a logistics question you haven’t been able to answer.\n\nDual-Lifers are often closer than they feel. The plan exists — it just has specific holes.",
+    nextStep:"Identify the 2–3 specific things keeping you from setting a firm date. For most Dual-Lifers, it’s one of: the financial runway number, the school decision, or the partner alignment conversation. The Returnee Roadmap addresses each with specific frameworks and worksheets — not general advice, but decision tools you can work through and complete."},
+  { min:35, max:40, name:"The Reinventor", tagline:"The decision is made. Now execute.",
+    description:"You’re not reading this because you’re unsure — you’re reading this because you want to do it right. You have a destination, a timeline, and a family that’s aligned. What you need now is a complete, practical plan that covers everything before you land, so you’re not improvising on the ground.\n\nReinventors make the most of The Returnee Roadmap because they’re past the motivational content — they need the checklists, the calculators, and the frameworks. And they need Section 6: the first 90 days on the ground, delivered live from Abidjan in September 2026.",
+    nextStep:"Work through Sections 3–5 of the Roadmap (finances, family alignment, practical plan) and use the 90-day pre-departure checklist to sequence everything. You’re close. The plan will get you there."},
+];
+const KIT_FORM_ID = "9552151";
+let currentQ = 0, answers = new Array(10).fill(null), totalScore = 0;
+function showScreen(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('screen-'+id).classList.add('active'); }
+function updateProgress() { const pct=(currentQ/QUESTIONS.length)*100; document.getElementById('progress-fill').style.width=pct+'%'; document.getElementById('q-counter').textContent=currentQ<QUESTIONS.length?(currentQ+1)+' / '+QUESTIONS.length:''; }
+function renderQuestion() { const q=QUESTIONS[currentQ]; document.getElementById('q-label').textContent='Question '+(currentQ+1)+' of '+QUESTIONS.length; document.getElementById('q-text').textContent=q.text; const c=document.getElementById('options-container'); c.innerHTML=''; q.options.forEach(opt=>{ const b=document.createElement('button'); b.className='option-btn'+(answers[currentQ]===opt.pts?' selected':''); b.innerHTML='<span class="option-letter">'+opt.letter+'</span><span class="option-text">'+opt.text+'</span>'; b.onclick=()=>selectOption(opt.pts,b); c.appendChild(b); }); document.getElementById('btn-next').disabled=answers[currentQ]===null; document.getElementById('btn-back').disabled=currentQ===0; document.getElementById('btn-next').textContent=currentQ===QUESTIONS.length-1?'See My Result →':'Next →'; updateProgress(); }
+function selectOption(pts,btn) { document.querySelectorAll('.option-btn').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); answers[currentQ]=pts; document.getElementById('btn-next').disabled=false; }
+function startQuiz() { currentQ=0; answers=new Array(QUESTIONS.length).fill(null); showScreen('question'); renderQuestion(); }
+function goNext() { if(answers[currentQ]===null)return; if(currentQ<QUESTIONS.length-1){currentQ++;renderQuestion();}else{totalScore=answers.reduce((s,v)=>s+v,0);document.getElementById('progress-fill').style.width='100%';document.getElementById('q-counter').textContent='';showScreen('gate');} }
+function goBack() { if(currentQ>0){currentQ--;renderQuestion();} }
+async function submitGate() { const name=document.getElementById('gate-name').value.trim(),email=document.getElementById('gate-email').value.trim(),errEl=document.getElementById('gate-error'),btn=document.getElementById('btn-reveal'); errEl.textContent=''; if(!name){errEl.textContent='Please enter your first name.';return;} if(!email||!email.includes('@')){errEl.textContent='Please enter a valid email address.';return;} btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Just a moment…'; const result=RESULTS.find(r=>totalScore>=r.min&&totalScore<=r.max); try{await fetch('https://app.convertkit.com/forms/'+KIT_FORM_ID+'/subscriptions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email_address:email,first_name:name,fields:{returnee_stage:result?result.name:'',returnee_score:String(totalScore)}})});}catch(e){} showResult(result,name,totalScore); }
+function showResult(result,name,score) { if(!result)return; document.getElementById('result-name').textContent=result.name; document.getElementById('result-badge').textContent='Score: '+score+' · '+result.name; document.getElementById('result-tagline').textContent=result.tagline; const d=document.getElementById('result-description'); d.innerHTML=result.description.split('\n\n').map(p=>'<p style="margin-bottom:14px;">'+p+'</p>').join(''); document.getElementById('result-next-step').textContent=result.nextStep; showScreen('result'); window.scrollTo({top:0,behavior:'smooth'}); }
+</script>
+</body>
+</html>
